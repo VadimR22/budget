@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<title>Бюджет Рахимовых</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg1:#F2F2F7;--bg2:#E9E9F1;--card:rgba(255,255,255,.72);--card2:rgba(255,255,255,.55);
+  --txt:#1C1C1E;--txt2:#6E6E73;--sep:rgba(60,60,67,.14);
+  --blue:#0A84FF;--green:#30D158;--red:#FF3B30;--orange:#FF9F0A;--purple:#BF5AF2;
+  --glass:saturate(180%) blur(24px);--r:22px;--shadow:0 10px 30px rgba(0,0,0,.08);
+}
+html[data-theme="dark"]{
+  --bg1:#000;--bg2:#0E0E12;--card:rgba(28,28,30,.72);--card2:rgba(44,44,46,.55);
+  --txt:#F5F5F7;--txt2:#98989F;--sep:rgba(255,255,255,.12);--shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;color:var(--txt);
+  font:16px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(900px 600px at 10% -5%,rgba(10,132,255,.18),transparent 60%),
+    radial-gradient(800px 600px at 95% 0%,rgba(191,90,242,.16),transparent 60%),
+    radial-gradient(700px 500px at 50% 100%,rgba(48,209,88,.14),transparent 60%),
+    linear-gradient(180deg,var(--bg1),var(--bg2));
+  background-attachment:fixed;padding-bottom:110px;
+}
+body.tma{padding-top:6px}
+.wrap{width:min(1020px,100%);margin:auto;padding:18px 16px 0}
+.status{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--txt2);font-weight:600;padding:2px 6px 10px;flex-wrap:wrap}
+h1{font-size:34px;letter-spacing:-.6px;margin:2px 0 2px;font-weight:800}
+.sub{color:var(--txt2);font-size:14px;margin:0 0 14px}
+.glass{background:var(--card);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border:1px solid var(--sep);border-radius:var(--r);box-shadow:var(--shadow)}
+.pad{padding:16px}
+.sec{display:none}
+.sec.on{display:block;animation:in .28s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.secHead{display:flex;align-items:center;gap:10px;margin:16px 4px 12px;flex-wrap:wrap}
+.secHead h2{font-size:22px;margin:0;font-weight:800;letter-spacing:-.3px}
+.secHead .tag{margin-left:auto;font-size:12px;font-weight:800;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em}
+.icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:16px;flex:0 0 auto;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.i-inc{background:linear-gradient(180deg,#34D399,#0F9F62)}
+.i-pay{background:linear-gradient(180deg,#FFB340,#F0870A)}
+.i-debt{background:linear-gradient(180deg,#FF6B6B,#D62B22)}
+.i-cred{background:linear-gradient(180deg,#7AA6FF,#0A5BFF)}
+.i-ov{background:linear-gradient(180deg,#C48BFF,#8B2FE0)}
+.i-ch{background:linear-gradient(180deg,#5AC8FA,#0A84FF)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile{padding:18px 20px;border-radius:22px}
+.tile small{display:block;font-size:12px;color:var(--txt2);font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.tile b{display:block;font-size:30px;font-weight:800;letter-spacing:-.8px;margin-top:8px;font-variant-numeric:tabular-nums}
+.tile .hint{font-size:12px;color:var(--txt2);margin-top:6px}
+.g{color:var(--green)}.r{color:var(--red)}.o{color:var(--orange)}.b{color:var(--blue)}.p{color:var(--purple)}
+.bar{height:10px;border-radius:99px;background:var(--sep);overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#0F9F62);transition:width .4s}
+.block{margin-top:14px;padding:16px}
+.blockHead{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:800;letter-spacing:-.2px;margin:0 2px 10px}
+.blockHead .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);flex:0 0 auto}
+.blockHead .dot.o{background:var(--orange)}
+.blockHead .right{margin-left:auto;font-size:12px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.innerList{border:1px solid var(--sep);border-radius:16px;overflow:hidden;background:var(--card2)}
+.row{display:grid;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--sep)}
+.row:last-child{border-bottom:0}
+.row.inc{grid-template-columns:1.1fr 1.5fr 150px 1fr 34px}
+.row.pay{grid-template-columns:1.7fr 160px 150px 118px 34px}
+.row.debt{grid-template-columns:1.7fr 150px 150px 150px 34px}
+.row.cp{grid-template-columns:1.4fr 160px 118px 34px}
+.row.auto{background:linear-gradient(90deg,rgba(10,132,255,.10),transparent 70%)}
+.rowHead{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--txt2);background:rgba(120,120,128,.10)}
+.rowHead>span{padding:0 2px}
+.inp,select{width:100%;min-height:40px;border:1px solid transparent;border-radius:12px;background:rgba(255,255,255,.6);color:var(--txt);padding:8px 11px;font:15px/1.2 inherit;transition:border .15s,box-shadow .15s}
+html[data-theme="dark"] .inp,html[data-theme="dark"] select{background:rgba(120,120,128,.24)}
+.inp:hover,select:hover{border-color:var(--sep)}
+.inp:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(10,132,255,.18)}
+.money,.numr{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.ro{opacity:.8;font-weight:700;cursor:default}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--txt2) 50%),linear-gradient(135deg,var(--txt2) 50%,transparent 50%);background-position:calc(100% - 16px) 18px,calc(100% - 11px) 18px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.sw{appearance:none;-webkit-appearance:none;width:50px;height:30px;border-radius:99px;background:rgba(120,120,128,.28);position:relative;transition:.25s;cursor:pointer;flex:0 0 auto;margin:0}
+.sw:before{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2);transition:.25s}
+.sw:checked{background:var(--green)}
+.sw:checked:before{transform:translateX(20px)}
+.swWrap{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt2);font-weight:700}
+.del{width:32px;height:32px;border-radius:50%;border:0;background:rgba(120,120,128,.16);color:var(--red);font-size:15px;cursor:pointer;transition:.15s}
+.del:hover{background:var(--red);color:#fff;transform:scale(1.06)}
+.lock{width:32px;height:32px;display:grid;place-items:center;color:var(--txt2);font-size:13px}
+.add{display:flex;align-items:center;gap:9px;width:100%;justify-content:center;margin-top:10px;border:0;border-radius:16px;padding:13px;background:var(--blue);color:#fff;font:700 15px inherit;cursor:pointer;box-shadow:0 8px 20px rgba(10,132,255,.28);transition:transform .12s}
+.add:active{transform:scale(.985)}
+.add.gr{background:var(--green);box-shadow:0 8px 20px rgba(48,209,88,.26)}
+.add.rd{background:var(--red);box-shadow:0 8px 20px rgba(255,59,48,.24)}
+.add.or{background:var(--orange);box-shadow:0 8px 20px rgba(255,159,10,.26)}
+.add.gh{background:rgba(120,120,128,.14);color:var(--txt);box-shadow:none;border:1px solid var(--sep)}
+.plus{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:15px;line-height:1}
+.creditCard{margin-top:14px;padding:16px}
+.cHead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cName{flex:1 1 220px;font-weight:800;font-size:18px;letter-spacing:-.2px;border:1px dashed var(--sep);border-radius:12px;background:transparent;color:var(--txt);padding:10px 12px}
+.cName:focus{outline:none;border:1px solid var(--blue);box-shadow:0 0 0 4px rgba(10,132,255,.18)}
+.cMeta{margin-top:10px}
+.lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2);display:block;margin:0 0 5px 3px}
+.gen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;align-items:end;margin-top:12px;padding:13px;border-radius:16px;background:rgba(120,120,128,.10);border:1px solid var(--sep)}
+.genBtn{min-height:40px;border:0;border-radius:12px;background:var(--purple);color:#fff;font:700 14px inherit;cursor:pointer}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-top:12px}
+.st{padding:13px 14px;border-radius:16px;background:rgba(120,120,128,.10);border:1px solid var(--sep)}
+.st small{display:block;font-size:10.5px;color:var(--txt2);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.st b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+.st .h{font-size:11px;color:var(--txt2);font-weight:700}
+.chartBox{width:100%;overflow-x:auto}
+svg.chart{width:100%;min-width:620px;height:auto;display:block}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
+.tabbar{display:flex;gap:2px;width:min(760px,100%);padding:7px;border-radius:26px;background:var(--card);backdrop-filter:var(--glass);-webkit-backdrop-filter:var(--glass);border:1px solid var(--sep);box-shadow:0 -6px 30px rgba(0,0,0,.14)}
+.tab{flex:1;border:0;background:transparent;color:var(--txt2);border-radius:20px;padding:8px 3px;font:700 10.5px inherit;display:grid;gap:3px;justify-items:center;cursor:pointer;transition:.18s}
+.tab em{font-style:normal;font-size:18px;line-height:1}
+.tab.on{background:rgba(120,120,128,.14);color:var(--blue);box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.chip{border:1px solid var(--sep);background:var(--card2);color:var(--txt);border-radius:99px;padding:9px 13px;font:700 13px inherit;cursor:pointer}
+.chip.save{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 6px 16px rgba(10,132,255,.3)}
+.chip.state{cursor:default}
+.chip.ok{border-color:rgba(48,209,88,.5);color:var(--green)}
+.chip.err{border-color:rgba(255,59,48,.5);color:var(--red)}
+.mSel{min-height:38px;border-radius:12px}
+.empty{padding:22px;text-align:center;color:var(--txt2);font-size:14px}
+.note{font-size:13px;color:var(--txt2);padding:10px 4px 0}
+.toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-70px);background:rgba(28,28,30,.92);color:#fff;padding:11px 18px;border-radius:99px;font:700 13px inherit;z-index:50;transition:.3s;backdrop-filter:blur(10px);max-width:90%;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+@media(max-width:780px){
+  h1{font-size:28px}.tile b{font-size:26px}
+  .row,.row.inc,.row.pay,.row.debt,.row.cp{grid-template-columns:1fr 1fr;padding:12px}
+  .row>*:nth-child(1){grid-column:1/-1}
+  .rowHead{display:none}.del,.lock{justify-self:end}
+}
+</style>
+</head>
+<body>
+<script id="savedState" type="application/json">null</script>
+<div class="toast" id="toast">Сохранено</div>
+
+<div class="wrap">
+  <div class="status"><span id="clock">—</span><span id="monthTag">—</span></div>
+  <h1>Бюджет Рахимовых</h1>
+  <p class="sub">Общий бюджет семьи: доходы, обязательные платежи, плановые расходы, долги и кредиты. Изменения видны обоим участникам.</p>
+
+  <div class="top">
+    <select id="month" class="chip mSel" title="Рабочий месяц"></select>
+    <button class="chip" id="themeBtn">🌙 Тема</button>
+    <button class="chip" id="syncBtn">🔄 Обновить</button>
+    <span class="chip state" id="syncTag">☁️ …</span>
+    <button class="chip save" id="saveBtn">💾 Сохранить файл</button>
+  </div>
+
+  <!-- ОБЗОР -->
+  <section class="sec on" id="s-ov">
+    <div class="secHead"><span class="icon i-ov">◎</span><h2>Обзор месяца</h2><span class="tag" id="ovMonthTag"></span></div>
+    <div class="tiles" id="ovTiles"></div>
+    <div class="glass pad" style="margin-top:12px">
+      <div class="lab">Прогресс по платежам месяца (обязательные + плановые)</div>
+      <div class="bar"><i id="ovBar" style="width:0%"></i></div>
+      <div class="note" id="ovBarTxt"></div>
+    </div>
+    <div class="secHead" style="margin-top:22px"><span class="icon i-ch">Σ</span><h2>Обзор года</h2><span class="tag" id="ovYearTag"></span></div>
+    <div class="tiles" id="ovYearTiles"></div>
+    <div class="note" id="ovYearNote"></div>
+  </section>
+
+  <!-- ДОХОДЫ -->
+  <section class="sec" id="s-inc">
+    <div class="secHead"><span class="icon i-inc">↑</span><h2>Доходы</h2></div>
+    <div class="tiles" id="incTiles"></div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot" style="background:var(--green)"></span>Поступления за месяц</div>
+      <div class="innerList">
+        <div class="row inc rowHead"><span>Что за доход</span><span>Комментарий</span><span style="text-align:right">Сумма</span><span>Дата</span><span></span></div>
+        <div id="incList"></div>
+      </div>
+      <button class="add gr" data-act="addInc"><span class="plus">＋</span>Добавить доход</button>
+      <div class="stat" id="incStat"></div>
+    </div>
+  </section>
+
+  <!-- РАСХОД -->
+  <section class="sec" id="s-pay">
+    <div class="secHead"><span class="icon i-pay">↻</span><h2>Расход за месяц</h2></div>
+    <div class="tiles" id="payTiles"></div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot o"></span>Ежемесячные обязательные платежи</div>
+      <div class="innerList">
+        <div class="row pay rowHead"><span>Что за расход</span><span>Дата</span><span style="text-align:right">Сумма</span><span>Оплачено</span><span></span></div>
+        <div id="payList"></div>
+      </div>
+      <button class="add or" data-act="addPay"><span class="plus">＋</span>Добавить обязательный платёж</button>
+      <button class="add gh" data-act="copyPrev">⧉ Скопировать список из прошлого месяца</button>
+      <div class="stat" id="payStat"></div>
+    </div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot"></span>Плановые расходы</div>
+      <div class="innerList">
+        <div class="row pay rowHead"><span>Статья расхода</span><span>Дата</span><span style="text-align:right">Сумма</span><span>Оплачено</span><span></span></div>
+        <div id="planList"></div>
+      </div>
+      <button class="add" data-act="addPlan"><span class="plus">＋</span>Добавить плановый расход</button>
+      <div class="stat" id="planStat"></div>
+    </div>
+    <div class="note">Каждый месяц ведётся отдельно. Строки 🔒 подтягиваются из «Кредитов» по датам графика. Сортировка по дате оплаты, строки без даты в конце.</div>
+  </section>
+
+  <!-- ДОЛГИ -->
+  <section class="sec" id="s-debt">
+    <div class="secHead"><span class="icon i-debt">!</span><h2>Долги</h2></div>
+    <div class="tiles" id="debtTiles"></div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot" style="background:var(--red)"></span>Список долгов (не сбрасывается по месяцам)</div>
+      <div class="innerList">
+        <div class="row debt rowHead"><span>Что за долг</span><span style="text-align:right">Сумма долга</span><span style="text-align:right">Погашено</span><span style="text-align:right">Остаток</span><span></span></div>
+        <div id="debtList"></div>
+      </div>
+      <button class="add rd" data-act="addDebt"><span class="plus">＋</span>Добавить долг</button>
+      <div class="stat" id="debtStat"></div>
+    </div>
+  </section>
+
+  <!-- КРЕДИТЫ -->
+  <section class="sec" id="s-cred">
+    <div class="secHead"><span class="icon i-cred">₽</span><h2>Кредиты и рассрочки</h2></div>
+    <div class="tiles" id="credTiles"></div>
+    <div id="credList"></div>
+    <button class="add" data-act="addCred"><span class="plus">＋</span>Новый кредит / заём</button>
+  </section>
+
+  <!-- ГРАФИКИ -->
+  <section class="sec" id="s-ch">
+    <div class="secHead"><span class="icon i-ch">▤</span><h2>Графики и статистика</h2>
+      <select id="chYear" class="chip mSel" style="margin-left:auto;max-width:150px"></select>
+    </div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot" style="background:var(--green)"></span>Динамика доходов по месяцам<span class="right" id="chIncSum"></span></div>
+      <div class="chartBox" id="chInc"></div>
+      <div class="stat" id="chIncStat"></div>
+    </div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot o"></span>Динамика расходов по месяцам<span class="right" id="chExpSum"></span></div>
+      <div class="chartBox" id="chExp"></div>
+      <div class="stat" id="chExpStat"></div>
+      <div class="note">В расходы входят обязательные платежи месяца, взносы по кредитам из графиков и плановые расходы. Будущие месяцы показаны бледнее — это план.</div>
+    </div>
+    <div class="glass block">
+      <div class="blockHead"><span class="dot" style="background:var(--purple)"></span>Доходы и расходы вместе<span class="right" id="chMixSum"></span></div>
+      <div class="chartBox" id="chMix"></div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs"><div class="tabbar">
+  <button class="tab on" data-tab="ov"><em>◎</em>Обзор</button>
+  <button class="tab" data-tab="inc"><em>↑</em>Доходы</button>
+  <button class="tab" data-tab="pay"><em>↻</em>Расход</button>
+  <button class="tab" data-tab="debt"><em>!</em>Долги</button>
+  <button class="tab" data-tab="cred"><em>₽</em>Кредиты</button>
+  <button class="tab" data-tab="ch"><em>▤</em>Графики</button>
+</div></nav>
+
+<script>
+/* ================== НАСТРОЙКИ СИНХРОНИЗАЦИИ ==================
+   1) API_URL — адрес деплоя Google Apps Script (…/exec)
+   2) SECRET  — тот же секрет, что в скрипте
+   Пока API_URL пустой, приложение работает офлайн (только на этом устройстве).
+============================================================== */
+const API_URL='';
+const SECRET='ПРИДУМАЙТЕ_ДЛИННЫЙ_СЕКРЕТ';
+const SYNC_EVERY=10000;
+
+const KEY='mtBudget_v5';
+const uid=()=>Math.random().toString(36).slice(2,10);
+const num=v=>{if(typeof v==='number')return v;const n=parseFloat(String(v==null?'':v).replace(/[^\d,.\-]/g,'').replace(',','.'));return isNaN(n)?0:n};
+const fmt=n=>Math.round(n||0).toLocaleString('ru-RU').replace(/\u00A0/g,' ')+' ₽';
+const mval=n=>n?Math.round(n).toLocaleString('ru-RU').replace(/\u00A0/g,' ')+' ₽':'';
+const short=n=>{n=Math.round(n||0);return n>=1000000?(n/1000000).toFixed(1).replace('.',',')+' млн':n>=1000?Math.round(n/1000)+' т':String(n)};
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const ymOf=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+const mKey=d=>String(d||'').slice(0,7);
+const dayOf=d=>{const p=String(d||'').split('-');return p[2]?+p[2]:0};
+const dmy=d=>{const p=String(d||'').split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:''};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const todayISO=iso(new Date());
+const thisYM=todayISO.slice(0,7);
+const clampDate=(ym,day)=>{const [y,m]=ym.split('-').map(Number);const last=new Date(y,m,0).getDate();return ym+'-'+String(Math.min(Math.max(day||1,1),last)).padStart(2,'0')};
+const shiftYM=(ym,k)=>{const [y,m]=ym.split('-').map(Number);return ymOf(new Date(y,m-1+k,1))};
+const sortKey=d=>{const k=dayOf(d);return k?k:999};
+const MN=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const MNS=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const mName=m=>{const [y,mm]=m.split('-');return MN[+mm-1]+' '+y};
+const Y_MIN=2026,Y_MAX=2030;
+
+/* ---------- Telegram ---------- */
+const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;
+let ME='local',MENAME='устройство';
+if(tg){
+  try{tg.ready();tg.expand();if(tg.disableVerticalSwipes)tg.disableVerticalSwipes()}catch(e){}
+  document.body.classList.add('tma');
+  const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
+  if(u){ME=String(u.id);MENAME=u.first_name||('id'+u.id)}
+}
+
+function seed(){return {theme:'light',month:(thisYM>='2026-01'&&thisYM<='2030-12')?thisYM:'2026-01',savedAt:0,lastByName:'',
+  incomes:[],paymentsByMonth:{},plansByMonth:{},
+  debts:[{id:uid(),title:'',sum:0,repaid:0}],
+  credits:[{id:uid(),name:'Кредит — банк',note:'',items:[]}]}}
+function migrate(o){
+  if(!o||typeof o!=='object')return seed();
+  const s=Object.assign(seed(),o);
+  if(!s.month||s.month<'2026-01'||s.month>'2030-12')s.month=seed().month;
+  ['incomes','debts','credits'].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
+  s.credits.forEach(c=>{if(!Array.isArray(c.items))c.items=[]});
+  if(!s.paymentsByMonth||typeof s.paymentsByMonth!=='object')s.paymentsByMonth={};
+  if(!s.plansByMonth||typeof s.plansByMonth!=='object')s.plansByMonth={};
+  if(Array.isArray(o.payments)&&o.payments.length){
+    const m=s.month;s.paymentsByMonth[m]=s.paymentsByMonth[m]||[];
+    o.payments.forEach(p=>{const day=dayOf(p.date)|| +p.day||0;
+      s.paymentsByMonth[m].push({id:uid(),title:p.title||'',date:day?clampDate(m,day):'',sum:num(p.sum),paid:!!(p.paid&&p.paid[m])})});
+    delete s.payments;
+  }
+  if(Array.isArray(o.plans)&&o.plans.length){
+    o.plans.forEach(p=>{const m=mKey(p.date)||s.month;s.plansByMonth[m]=s.plansByMonth[m]||[];
+      s.plansByMonth[m].push({id:uid(),title:p.title||'',date:p.date||'',sum:num(p.sum),paid:!!p.paid})});
+    delete s.plans;
+  }
+  return s;
+}
+let embedded=null,stored=null;
+try{embedded=JSON.parse(document.getElementById('savedState').textContent||'null')}catch(e){}
+try{stored=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('mtBudget_v4')||'null')}catch(e){}
+let S=migrate(embedded&&(!stored||(embedded.savedAt||0)>=(stored.savedAt||0))?embedded:(stored||null));
+let chYear=+S.month.slice(0,4);
+
+let tId;
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(tId);tId=setTimeout(()=>el.classList.remove('on'),1600)}
+function save(q){S.savedAt=Date.now();S.lastByName=MENAME;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushSoon();if(!q)toast('Сохранено')}
+
+/* ---------- синхронизация ---------- */
+let pushTimer=null,busy=false,lastSync=0;
+function syncTag(text,cls){const el=document.getElementById('syncTag');el.textContent=text;el.className='chip state'+(cls?' '+cls:'')}
+function pushSoon(){if(!API_URL)return;clearTimeout(pushTimer);pushTimer=setTimeout(push,1200)}
+async function push(){
+  if(!API_URL||busy)return;busy=true;syncTag('☁️ сохраняю…');
+  try{
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({secret:SECRET,userId:ME,userName:MENAME,initData:tg?tg.initData:'',state:S})});
+    const d=await r.json();
+    if(d.error){syncTag('⚠️ нет доступа','err');return}
+    if(d.conflict&&d.state){applyRemote(d.state);toast('Взята версия от '+(d.state.lastByName||'второго участника'))}
+    lastSync=Date.now();syncTag('☁️ синхронизировано','ok');
+  }catch(e){syncTag('📴 офлайн','err')}finally{busy=false}
+}
+async function pull(silent){
+  if(!API_URL||busy)return;busy=true;
+  try{
+    const r=await fetch(API_URL+'?secret='+encodeURIComponent(SECRET)+'&t='+Date.now());
+    const d=await r.json();
+    if(d.error){syncTag('⚠️ нет доступа','err');return}
+    if(d.savedAt&&d.savedAt>(S.savedAt||0)){applyRemote(d);if(!silent)toast('Загружены изменения от '+(d.lastByName||'второго участника'))}
+    lastSync=Date.now();syncTag('☁️ синхронизировано','ok');
+  }catch(e){syncTag('📴 офлайн','err')}finally{busy=false}
+}
+function applyRemote(d){
+  const keepMonth=S.month,keepTheme=S.theme;
+  S=migrate(d);S.month=keepMonth;S.theme=keepTheme;chYear=+S.month.slice(0,4);
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  renderAll();
+}
+
+/* ---------- доступ ---------- */
+const M=()=>S.month;
+const PM=m=>{m=m||M();if(!S.paymentsByMonth[m])S.paymentsByMonth[m]=[];return S.paymentsByMonth[m]};
+const PL=m=>{m=m||M();if(!S.plansByMonth[m])S.plansByMonth[m]=[];return S.plansByMonth[m]};
+const payArr=m=>S.paymentsByMonth[m]||[];
+const planArr=m=>S.plansByMonth[m]||[];
+const incArr=m=>S.incomes.filter(i=>mKey(i.date)===m);
+const cItems=c=>c.items||[];
+const cTotal=c=>cItems(c).reduce((s,i)=>s+num(i.sum),0);
+const cPaid=c=>cItems(c).filter(i=>i.paid).reduce((s,i)=>s+num(i.sum),0);
+const cLeft=c=>cTotal(c)-cPaid(c);
+const cMonthArr=(c,m)=>cItems(c).filter(i=>mKey(i.date)===m);
+const incOf=m=>incArr(m).reduce((s,i)=>s+num(i.sum),0);
+const payOf=m=>payArr(m).reduce((s,p)=>s+num(p.sum),0);
+const payPaidOf=m=>payArr(m).filter(p=>p.paid).reduce((s,p)=>s+num(p.sum),0);
+const credOf=m=>S.credits.reduce((s,c)=>s+cMonthArr(c,m).reduce((a,i)=>a+num(i.sum),0),0);
+const credPaidOf=m=>S.credits.reduce((s,c)=>s+cMonthArr(c,m).filter(i=>i.paid).reduce((a,i)=>a+num(i.sum),0),0);
+const planOf=m=>planArr(m).reduce((s,p)=>s+num(p.sum),0);
+const planPaidOf=m=>planArr(m).filter(p=>p.paid).reduce((s,p)=>s+num(p.sum),0);
+const expOf=m=>payOf(m)+credOf(m)+planOf(m);
+const crAll=()=>S.credits.reduce((s,c)=>s+cTotal(c),0);
+const crPaidAll=()=>S.credits.reduce((s,c)=>s+cPaid(c),0);
+const debtMan=()=>S.debts.reduce((s,d)=>s+Math.max(num(d.sum)-num(d.repaid),0),0);
+const debtCred=()=>crAll()-crPaidAll();
+const months=y=>Array.from({length:12},(_,i)=>y+'-'+String(i+1).padStart(2,'0'));
+const monthsPast=y=>months(y).filter(m=>m<=thisYM);
+const credRows=()=>{const a=[];S.credits.forEach(c=>cMonthArr(c,M()).forEach(i=>a.push({cid:c.id,id:i.id,name:c.name,date:i.date,sum:num(i.sum),paid:!!i.paid})));return a};
+
+function monthOptions(){
+  const all=[];for(let y=Y_MIN;y<=Y_MAX;y++)months(String(y)).forEach(m=>all.push(m));
+  document.getElementById('month').innerHTML=all.map(m=>
+    `<option value="${m}"${m===S.month?' selected':''}>📅 ${mName(m)}${m===thisYM?' · текущий':''}</option>`).join('');
+  document.getElementById('monthTag').textContent='Месяц: '+mName(S.month)+(S.lastByName?' · правил: '+S.lastByName:'');
+  const ys=[];for(let y=Y_MIN;y<=Y_MAX;y++)ys.push(y);
+  document.getElementById('chYear').innerHTML=ys.map(y=>`<option value="${y}"${y===chYear?' selected':''}>📊 ${y} год</option>`).join('');
+}
+function renderInc(){
+  const types=['Зарплата','Доп заработок','Подарок','Другое'];
+  document.getElementById('incList').innerHTML=incArr(M()).map(i=>`
+    <div class="row inc" data-k="incomes" data-id="${i.id}">
+      <select data-f="type">${types.map(t=>`<option${t===i.type?' selected':''}>${t}</option>`).join('')}</select>
+      <input class="inp" data-f="note" value="${esc(i.note)}" placeholder="Комментарий (от кого, за что)">
+      <input class="inp money" data-f="sum" inputmode="decimal" value="${mval(num(i.sum))}" placeholder="0 ₽">
+      <input class="inp" data-f="date" type="date" value="${esc(i.date)}">
+      <button class="del" data-act="del" title="Удалить">✕</button>
+    </div>`).join('')||'<div class="empty">За '+mName(M())+' доходов пока нет — нажмите «Добавить доход».</div>';
+}
+function renderPay(){
+  const auto=credRows().map(r=>({s:sortKey(r.date),html:`
+    <div class="row pay auto" data-k="creditPay" data-cid="${r.cid}" data-id="${r.id}">
+      <input class="inp ro" value="🔒 Кредит: ${esc(r.name)}" readonly tabindex="-1">
+      <input class="inp ro" value="${dmy(r.date)}" readonly tabindex="-1">
+      <input class="inp money ro" value="${fmt(r.sum)}" readonly tabindex="-1">
+      <label class="swWrap"><input type="checkbox" class="sw" data-f="paid" ${r.paid?'checked':''}><span>${r.paid?'да':'нет'}</span></label>
+      <span class="lock" title="Строка из блока «Кредиты»">🔒</span>
+    </div>`}));
+  const own=PM().map(p=>({s:sortKey(p.date),html:`
+    <div class="row pay" data-k="pay" data-id="${p.id}">
+      <input class="inp" data-f="title" value="${esc(p.title)}" placeholder="Что за расход (интернет, связь, аренда…)">
+      <input class="inp" data-f="date" type="date" value="${esc(p.date||'')}">
+      <input class="inp money" data-f="sum" inputmode="decimal" value="${mval(num(p.sum))}" placeholder="0 ₽">
+      <label class="swWrap"><input type="checkbox" class="sw" data-f="paid" ${p.paid?'checked':''}><span>${p.paid?'да':'нет'}</span></label>
+      <button class="del" data-act="del" title="Удалить">✕</button>
+    </div>`}));
+  document.getElementById('payList').innerHTML=auto.concat(own).sort((a,b)=>a.s-b.s).map(x=>x.html).join('')
+    ||'<div class="empty">На '+mName(M())+' платежей нет. Добавьте вручную или скопируйте список из прошлого месяца.</div>';
+  document.getElementById('planList').innerHTML=PL().slice().sort((a,b)=>sortKey(a.date)-sortKey(b.date)).map(p=>`
+    <div class="row pay" data-k="plan" data-id="${p.id}">
+      <input class="inp" data-f="title" value="${esc(p.title)}" placeholder="Что планирую купить / оплатить">
+      <input class="inp" data-f="date" type="date" value="${esc(p.date||'')}">
+      <input class="inp money" data-f="sum" inputmode="decimal" value="${mval(num(p.sum))}" placeholder="0 ₽">
+      <label class="swWrap"><input type="checkbox" class="sw" data-f="paid" ${p.paid?'checked':''}><span>${p.paid?'да':'нет'}</span></label>
+      <button class="del" data-act="del" title="Удалить">✕</button>
+    </div>`).join('')||'<div class="empty">Плановых расходов на '+mName(M())+' нет.</div>';
+}
+function renderDebt(){
+  const auto=S.credits.map(c=>`
+    <div class="row debt auto">
+      <input class="inp ro" value="🔒 ${esc(c.name)} — по графику кредита" readonly tabindex="-1">
+      <input class="inp money ro" value="${fmt(cTotal(c))}" readonly tabindex="-1">
+      <input class="inp money ro" value="${fmt(cPaid(c))}" readonly tabindex="-1">
+      <input class="inp money ro" value="${fmt(cLeft(c))}" readonly tabindex="-1">
+      <span class="lock" title="Строка из блока «Кредиты»">🔒</span>
+    </div>`).join('');
+  const man=S.debts.map(d=>`
+    <div class="row debt" data-k="debts" data-id="${d.id}">
+      <input class="inp" data-f="title" value="${esc(d.title)}" placeholder="Что за долг и кому">
+      <input class="inp money" data-f="sum" inputmode="decimal" value="${mval(num(d.sum))}" placeholder="0 ₽">
+      <input class="inp money" data-f="repaid" inputmode="decimal" value="${mval(num(d.repaid))}" placeholder="0 ₽">
+      <input class="inp money ro" data-o="left" value="${fmt(Math.max(num(d.sum)-num(d.repaid),0))}" readonly tabindex="-1">
+      <button class="del" data-act="del" title="Удалить">✕</button>
+    </div>`).join('');
+  document.getElementById('debtList').innerHTML=(auto+man)||'<div class="empty">Долгов нет. Красиво!</div>';
+}
+function renderCred(){
+  document.getElementById('credList').innerHTML=S.credits.map(c=>{
+    const items=cItems(c).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    const rows=items.map(i=>`
+      <div class="row cp" data-k="credit" data-cid="${c.id}" data-id="${i.id}">
+        <input class="inp" data-f="date" type="date" value="${esc(i.date)}">
+        <input class="inp money" data-f="sum" inputmode="decimal" value="${mval(num(i.sum))}" placeholder="0 ₽">
+        <label class="swWrap"><input type="checkbox" class="sw" data-f="paid" ${i.paid?'checked':''}><span>${i.paid?'опл.':'нет'}</span></label>
+        <button class="del" data-act="delCP" title="Удалить платёж">✕</button>
+      </div>`).join('')||'<div class="empty">График пуст — сгенерируйте его или добавьте платёж вручную.</div>';
+    return `
+    <div class="glass creditCard" data-k="credits" data-id="${c.id}">
+      <div class="cHead">
+        <span class="icon i-cred">₽</span>
+        <input class="cName" data-f="name" value="${esc(c.name)}" placeholder="Название: банк, кому и за что">
+        <button class="del" data-act="del" title="Удалить кредит">✕</button>
+      </div>
+      <div class="stat">
+        <div class="st"><small>Изначально должен</small><b data-o="cT">${fmt(cTotal(c))}</b></div>
+        <div class="st"><small>Оплачено</small><b class="g" data-o="cP">${fmt(cPaid(c))}</b></div>
+        <div class="st"><small>Остаток</small><b class="r" data-o="cL">${fmt(cLeft(c))}</b></div>
+        <div class="st"><small>В этом месяце</small><b class="o" data-o="cM">${fmt(cMonthArr(c,M()).reduce((s,i)=>s+num(i.sum),0))}</b></div>
+      </div>
+      <div class="cMeta"><span class="lab">Комментарий</span><input class="inp" data-f="note" value="${esc(c.note||'')}" placeholder="ставка, номер договора, цель"></div>
+      <div class="gen">
+        <div><span class="lab">Первый платёж</span><input class="inp" data-g="start" type="date" value="${items[0]?esc(items[0].date):todayISO}"></div>
+        <div><span class="lab">Кол-во месяцев</span><input class="inp numr" data-g="count" type="number" min="1" max="360" step="1" placeholder="12"></div>
+        <div><span class="lab">Взнос в месяц</span><input class="inp money" data-g="sum" inputmode="decimal" placeholder="30 000 ₽"></div>
+        <button class="genBtn" data-act="gen">Сгенерировать график</button>
+      </div>
+      <div class="innerList" style="margin-top:12px">
+        <div class="row cp rowHead"><span>Дата платежа</span><span style="text-align:right">Взнос</span><span>Оплачено</span><span></span></div>
+        ${rows}
+      </div>
+      <button class="add gh" data-act="addCP">＋ Добавить платёж в график</button>
+    </div>`}).join('')||'<div class="empty glass pad">Кредитов нет. Нажмите «Новый кредит / заём».</div>';
+}
+const tile=(l,v,c,h)=>`<div class="glass tile"><small>${l}</small><b class="${c||''}">${v}</b>${h?`<div class="hint">${h}</div>`:''}</div>`;
+const st=(l,v,c,h)=>`<div class="st"><small>${l}</small><b class="${c||''}">${v}</b>${h?`<div class="h">${h}</div>`:''}</div>`;
+
+function chart(series,y){
+  const W=760,H=300,L=64,R=14,T=22,B=42,iw=W-L-R,ih=H-T-B;
+  const maxV=Math.max(1,...series.flatMap(s=>s.data));
+  const step=Math.pow(10,Math.floor(Math.log10(maxV)))/2||1;
+  const top=Math.ceil(maxV/step)*step;
+  const grid=[0,.25,.5,.75,1].map(k=>{const v=top*k,yy=T+ih-ih*k;
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="currentColor" stroke-opacity=".13"/>
+      <text x="${L-8}" y="${yy+4}" text-anchor="end" font-size="10" fill="currentColor" opacity=".55" font-weight="700">${v?short(v):'0'}</text>`}).join('');
+  const bw=iw/12,gap=series.length>1?4:8,sw=(bw-gap*2)/series.length;
+  const bars=series.map((s,si)=>s.data.map((v,i)=>{
+    const m=y+'-'+String(i+1).padStart(2,'0'),fut=m>thisYM;
+    const h=top?ih*v/top:0,x=L+bw*i+gap+sw*si,yy=T+ih-h,cur=m===M();
+    return `<rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="${Math.max(sw-2,2).toFixed(1)}" height="${Math.max(h,v>0?2:0).toFixed(1)}" rx="5" fill="${s.color}" opacity="${cur?1:(fut?.42:.82)}"><title>${MN[i]} ${y}${fut?' (план)':''}: ${fmt(v)}</title></rect>`+
+      (v>0&&series.length===1?`<text x="${(x+sw/2).toFixed(1)}" y="${(yy-6).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="800" fill="currentColor" opacity="${fut?.45:.75}">${short(v)}</text>`:'')}).join('')).join('');
+  const xlab=MNS.map((n,i)=>{const cur=(y+'-'+String(i+1).padStart(2,'0'))===M();
+    return `<text x="${(L+bw*i+bw/2).toFixed(1)}" y="${H-B+20}" text-anchor="middle" font-size="11" font-weight="${cur?800:600}" fill="currentColor" opacity="${cur?.95:.55}">${n}</text>`}).join('');
+  const leg=series.length>1?series.map((s,i)=>`<circle cx="${L+i*140+6}" cy="${T-10}" r="5" fill="${s.color}"/><text x="${L+i*140+18}" y="${T-6}" font-size="11" font-weight="700" fill="currentColor" opacity=".7">${s.name}</text>`).join(''):'';
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${grid}${leg}${bars}${xlab}
+    <line x1="${L}" y1="${T+ih}" x2="${W-R}" y2="${T+ih}" stroke="currentColor" stroke-opacity=".3"/></svg>`;
+}
+function renderCharts(){
+  const y=String(chYear),ms=months(y),past=monthsPast(y);
+  const inc=ms.map(incOf),exp=ms.map(expOf),incP=past.map(incOf),expP=past.map(expOf);
+  const sum=a=>a.reduce((s,v)=>s+v,0),cnt=a=>a.filter(v=>v>0).length;
+  document.getElementById('chInc').innerHTML=chart([{name:'Доходы',color:'#30D158',data:inc}],y);
+  document.getElementById('chExp').innerHTML=chart([{name:'Расходы',color:'#FF9F0A',data:exp}],y);
+  document.getElementById('chMix').innerHTML=chart([{name:'Доходы',color:'#30D158',data:inc},{name:'Расходы',color:'#FF9F0A',data:exp}],y);
+  document.getElementById('chIncSum').textContent='факт '+fmt(sum(incP));
+  document.getElementById('chExpSum').textContent='факт '+fmt(sum(expP));
+  document.getElementById('chMixSum').textContent='баланс факта '+fmt(sum(incP)-sum(expP));
+  const best=incP.indexOf(Math.max(...incP,0)),worst=expP.indexOf(Math.max(...expP,0));
+  document.getElementById('chIncStat').innerHTML=
+    st('Факт за год',fmt(sum(incP)),'g','по '+(past.length?MN[past.length-1]:'—'))+
+    st('В среднем в месяц',fmt(cnt(incP)?sum(incP)/cnt(incP):0),'')+
+    st('Лучший месяц',incP[best]?MN[best]:'—','b',incP[best]?fmt(incP[best]):'нет данных');
+  document.getElementById('chExpStat').innerHTML=
+    st('Факт за год',fmt(sum(expP)),'o','план всего '+fmt(sum(exp)))+
+    st('В среднем в месяц',fmt(cnt(expP)?sum(expP)/cnt(expP):0),'')+
+    st('Самый дорогой месяц',expP[worst]?MN[worst]:'—','r',expP[worst]?fmt(expP[worst]):'нет данных');
+}
+function renderTotals(){
+  const m=M(),y=m.slice(0,4);
+  const inc=incOf(m),cred=credOf(m),own=payOf(m),need=own+cred,paid=payPaidOf(m)+credPaidOf(m),left=need-paid;
+  const pl=planOf(m),plP=planPaidOf(m),plL=pl-plP;
+  const free=inc-left-plL,tot=need+pl,done=paid+plP,pct=tot?Math.min(100,done/tot*100):0,cnt=incArr(m).length;
+
+  document.getElementById('ovMonthTag').textContent=mName(m);
+  document.getElementById('ovTiles').innerHTML=
+    tile('Общий доход за месяц',fmt(inc),'g','записей: '+cnt)+
+    tile('Обязательные платежи',fmt(need),'o','осталось '+fmt(left))+
+    tile('Уходит на кредиты',fmt(cred),'b','оплачено '+fmt(credPaidOf(m)))+
+    tile('Плановые расходы',fmt(pl),'p','осталось '+fmt(plL))+
+    tile('Свободные деньги',fmt(free),free<0?'r':'g','доход − всё неоплаченное');
+  document.getElementById('ovBar').style.width=pct+'%';
+  document.getElementById('ovBarTxt').textContent=`Оплачено ${fmt(done)} из ${fmt(tot)} — ${Math.round(pct)}% плана месяца. Осталось внести ${fmt(tot-done)}.`;
+
+  const past=monthsPast(y);
+  const incY=past.reduce((s,x)=>s+incOf(x),0),expY=past.reduce((s,x)=>s+expOf(x),0),credY=past.reduce((s,x)=>s+credOf(x),0);
+  const lastM=past.length?MN[past.length-1]:null;
+  document.getElementById('ovYearTag').textContent=y+' год'+(lastM?' · факт по '+lastM:'');
+  document.getElementById('ovYearTiles').innerHTML=
+    tile('Доходы за год',fmt(incY),'g',past.length?'учтено месяцев: '+past.length:'год ещё не начался')+
+    tile('Расходы за год',fmt(expY),'o','платежи + кредиты + планы')+
+    tile('Общий долг сейчас',fmt(debtMan()+debtCred()),'r','долги '+fmt(debtMan())+' + кредиты '+fmt(debtCred()))+
+    tile('Выплачено по кредитам',fmt(crPaidAll()),'g','из '+fmt(crAll())+' всего')+
+    tile('Кредиты за год',fmt(credY),'b','по прошедшим месяцам')+
+    tile('Баланс года',fmt(incY-expY),incY-expY<0?'r':'g','доходы − расходы факта');
+  document.getElementById('ovYearNote').textContent=past.length
+    ? 'В статистику года входят только прошедшие месяцы и текущий (январь — '+lastM+' '+y+'). Будущие месяцы и запланированные взносы не учитываются.'
+    : 'Данных за '+y+' год пока нет: этот год ещё не наступил.';
+
+  document.getElementById('incTiles').innerHTML=
+    tile('Доход за месяц',fmt(inc),'g')+tile('Записей в месяце',String(cnt),'b')+tile('Свободные деньги',fmt(free),free<0?'r':'g');
+  document.getElementById('incStat').innerHTML=
+    st('Итого за '+mName(m),fmt(inc),'g')+st('Записей',String(cnt),'b')+st('В среднем на запись',fmt(cnt?inc/cnt:0),'');
+
+  document.getElementById('payTiles').innerHTML=
+    tile('Расход за месяц — всего',fmt(tot),'','обязательные + плановые')+tile('Оплачено',fmt(done),'g')+tile('Осталось',fmt(tot-done),'r');
+  document.getElementById('payStat').innerHTML=
+    st('Нужно за месяц',fmt(need),'o','включая кредиты '+fmt(cred))+st('Оплачено',fmt(paid),'g')+st('Осталось',fmt(left),'r');
+  document.getElementById('planStat').innerHTML=
+    st('Запланировано',fmt(pl),'b')+st('Оплачено',fmt(plP),'g')+st('Осталось',fmt(plL),'r');
+
+  document.getElementById('debtTiles').innerHTML=
+    tile('Общий остаток долга',fmt(debtMan()+debtCred()),'r')+tile('Из кредитов',fmt(debtCred()),'o')+tile('Ручные долги',fmt(debtMan()),'');
+  document.getElementById('debtStat').innerHTML=
+    st('Ручные долги — остаток',fmt(debtMan()),'')+st('Из кредитов — остаток',fmt(debtCred()),'o')+st('Общий остаток',fmt(debtMan()+debtCred()),'r');
+
+  document.getElementById('credTiles').innerHTML=
+    tile('Изначально всего',fmt(crAll()),'')+tile('Выплачено',fmt(crPaidAll()),'g')+
+    tile('Остаток',fmt(crAll()-crPaidAll()),'r')+tile('Платежи в '+mName(m),fmt(cred),'o','оплачено '+fmt(credPaidOf(m)));
+
+  S.debts.forEach(d=>{const el=document.querySelector(`[data-k="debts"][data-id="${d.id}"] [data-o="left"]`);if(el)el.value=fmt(Math.max(num(d.sum)-num(d.repaid),0))});
+  S.credits.forEach(c=>{const card=document.querySelector(`.creditCard[data-id="${c.id}"]`);if(!card)return;
+    const set=(k,v)=>{const e=card.querySelector(`[data-o="${k}"]`);if(e)e.textContent=v};
+    set('cT',fmt(cTotal(c)));set('cP',fmt(cPaid(c)));set('cL',fmt(cLeft(c)));set('cM',fmt(cMonthArr(c,m).reduce((s,i)=>s+num(i.sum),0)))});
+}
+function renderAll(){monthOptions();renderInc();renderPay();renderDebt();renderCred();renderTotals();renderCharts()}
+
+function fmtMoneyEl(el){
+  const digits=el.value.replace(/[^\d]/g,'');
+  el.value=digits?Number(digits).toLocaleString('ru-RU').replace(/\u00A0/g,' ')+' ₽':'';
+  if(document.activeElement===el){const p=Math.max(el.value.length-2,0);try{el.setSelectionRange(p,p)}catch(e){}}
+}
+const findC=id=>S.credits.find(c=>c.id===id);
+const listOf=k=>k==='pay'?PM():k==='plan'?PL():k==='debts'?S.debts:k==='incomes'?S.incomes:k==='credits'?S.credits:[];
+
+document.addEventListener('input',e=>{
+  const el=e.target,f=el.dataset.f;
+  if(el.classList.contains('money')&&!el.readOnly)fmtMoneyEl(el);
+  if(!f)return;
+  const row=el.closest('[data-k]');if(!row)return;
+  const k=row.dataset.k,id=row.dataset.id;
+  if(k==='credit'||k==='creditPay'){
+    const c=findC(row.dataset.cid);if(!c)return;
+    const it=cItems(c).find(x=>x.id===id);if(!it)return;
+    if(f==='paid')it.paid=el.checked;else if(f==='sum')it.sum=num(el.value);else it[f]=el.value;
+  }else{
+    const obj=listOf(k).find(x=>x.id===id);if(!obj)return;
+    if(f==='paid')obj.paid=el.checked;
+    else if(f==='sum'||f==='repaid')obj[f]=num(el.value);
+    else obj[f]=el.value;
+  }
+  save(true);
+  if(f==='paid'){const s=el.parentElement.querySelector('span');if(s)s.textContent=el.checked?(k==='credit'?'опл.':'да'):'нет'}
+  if((k==='credit'||k==='creditPay')&&(f==='paid'||f==='sum')){renderPay();renderDebt()}
+  if(k==='credits'&&f==='name'){renderPay();renderDebt()}
+  renderTotals();renderCharts();
+});
+document.addEventListener('change',e=>{if(e.target.type==='date'){renderAll();save(true)}});
+document.addEventListener('blur',e=>{if(e.target.classList&&e.target.classList.contains('money'))fmtMoneyEl(e.target)},true);
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(b){
+    const act=b.dataset.act,row=b.closest('[data-k]');
+    if(act==='addInc'){S.incomes.push({id:uid(),type:'Зарплата',note:'',sum:0,date:clampDate(M(),M()===thisYM?new Date().getDate():1)});save(1);renderInc();renderTotals();renderCharts()}
+    if(act==='addPay'){PM().push({id:uid(),title:'',date:'',sum:0,paid:false});save(1);renderPay();renderTotals()}
+    if(act==='addPlan'){PL().push({id:uid(),title:'',date:'',sum:0,paid:false});save(1);renderPay();renderTotals()}
+    if(act==='addDebt'){S.debts.push({id:uid(),title:'',sum:0,repaid:0});save(1);renderDebt();renderTotals()}
+    if(act==='addCred'){S.credits.push({id:uid(),name:'Новый кредит',note:'',items:[]});save(1);renderCred();renderDebt();renderPay();renderTotals()}
+    if(act==='copyPrev'){
+      const prev=payArr(shiftYM(M(),-1));
+      if(!prev.length){toast('В прошлом месяце список пуст');return}
+      if(PM().length&&!confirm('Добавить '+prev.length+' строк из прошлого месяца к текущему списку?'))return;
+      prev.forEach(p=>PM().push({id:uid(),title:p.title,date:p.date?clampDate(M(),dayOf(p.date)):'',sum:num(p.sum),paid:false}));
+      save(1);renderPay();renderTotals();renderCharts();toast('Скопировано: '+prev.length+' строк')
+    }
+    if(act==='del'&&row){
+      const k=row.dataset.k;
+      if(k==='credits'&&!confirm('Удалить кредит вместе с графиком платежей?'))return;
+      const arr=listOf(k),i=arr.findIndex(x=>x.id===row.dataset.id);
+      if(i>-1)arr.splice(i,1);save(1);renderAll()
+    }
+    if(act==='delCP'&&row){const c=findC(row.dataset.cid);c.items=cItems(c).filter(x=>x.id!==row.dataset.id);save(1);renderAll()}
+    if(act==='addCP'){
+      const card=b.closest('[data-k="credits"]'),c=findC(card.dataset.id),last=cItems(c).slice(-1)[0];
+      let d=todayISO;
+      if(last&&last.date)d=clampDate(shiftYM(mKey(last.date),1),dayOf(last.date));
+      c.items.push({id:uid(),date:d,sum:last?num(last.sum):0,paid:false});
+      save(1);renderAll()
+    }
+    if(act==='gen'){
+      const card=b.closest('[data-k="credits"]'),c=findC(card.dataset.id);
+      const g=s=>card.querySelector('[data-g="'+s+'"]').value;
+      const start=g('start'),n=Math.max(1,Math.min(360,parseInt(g('count'),10)||0)),sum=num(g('sum'));
+      if(!start||!n||!sum){toast('Заполните дату, количество и взнос');return}
+      if(cItems(c).length&&!confirm('Заменить текущий график новым?'))return;
+      const ym0=mKey(start),d0=dayOf(start),items=[];
+      for(let i=0;i<n;i++)items.push({id:uid(),date:clampDate(shiftYM(ym0,i),d0),sum:sum,paid:false});
+      c.items=items;save(1);renderAll();toast('График на '+n+' мес., первый платёж '+dmy(items[0].date))
+    }
+    return;
+  }
+  const t=e.target.closest('.tab');
+  if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+    document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id==='s-'+t.dataset.tab));
+    window.scrollTo({top:0,behavior:'smooth'})}
+});
+document.getElementById('month').addEventListener('change',e=>{S.month=e.target.value;chYear=+S.month.slice(0,4);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}renderAll()});
+document.getElementById('chYear').addEventListener('change',e=>{chYear=+e.target.value;renderCharts()});
+document.getElementById('themeBtn').addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}});
+document.getElementById('syncBtn').addEventListener('click',()=>{if(!API_URL){toast('Синхронизация не настроена: впишите API_URL');return}pull()});
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const clone=document.documentElement.cloneNode(true);
+  ['incList','payList','planList','debtList','credList','ovTiles','ovYearTiles','incTiles','payTiles','debtTiles','credTiles','incStat','payStat','planStat','debtStat','month','chYear','chInc','chExp','chMix','chIncStat','chExpStat'].forEach(id=>{
+    const el=clone.querySelector('#'+id);if(el)el.innerHTML=''});
+  clone.querySelector('#savedState').textContent=JSON.stringify(S).replace(/</g,'\\u003c');
+  const html='<!doctype html>\n'+clone.outerHTML;
+  const d=new Date(),name='Бюджет Рахимовых '+String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()+'.html';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+  a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('Файл сохранён: '+name);
+});
+
+function clock(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+' · '+d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}
+document.documentElement.dataset.theme=S.theme||'light';
+clock();setInterval(clock,20000);renderAll();
+if(API_URL){syncTag('☁️ подключаюсь…');pull(true);setInterval(()=>pull(true),SYNC_EVERY);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull(true)});
+}else{syncTag('📴 локальный режим')}
+</script>
+</body>
+</html>
