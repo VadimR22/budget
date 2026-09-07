@@ -119,6 +119,7 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
 .chip.state{cursor:default}
 .chip.ok{border-color:rgba(48,209,88,.5);color:var(--green)}
 .chip.err{border-color:rgba(255,59,48,.5);color:var(--red)}
+.chip.wait{border-color:rgba(255,159,10,.5);color:var(--orange)}
 .mSel{min-height:38px;border-radius:12px}
 .empty{padding:22px;text-align:center;color:var(--txt2);font-size:14px}
 .note{font-size:13px;color:var(--txt2);padding:10px 4px 0}
@@ -149,7 +150,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     <button class="chip save" id="saveBtn">💾 Сохранить файл</button>
   </div>
 
-  <!-- ОБЗОР -->
   <section class="sec on" id="s-ov">
     <div class="secHead"><span class="icon i-ov">◎</span><h2>Обзор месяца</h2><span class="tag" id="ovMonthTag"></span></div>
     <div class="tiles" id="ovTiles"></div>
@@ -163,7 +163,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     <div class="note" id="ovYearNote"></div>
   </section>
 
-  <!-- ДОХОДЫ -->
   <section class="sec" id="s-inc">
     <div class="secHead"><span class="icon i-inc">↑</span><h2>Доходы</h2></div>
     <div class="tiles" id="incTiles"></div>
@@ -178,7 +177,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     </div>
   </section>
 
-  <!-- РАСХОД -->
   <section class="sec" id="s-pay">
     <div class="secHead"><span class="icon i-pay">↻</span><h2>Расход за месяц</h2></div>
     <div class="tiles" id="payTiles"></div>
@@ -204,7 +202,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     <div class="note">Каждый месяц ведётся отдельно. Строки 🔒 подтягиваются из «Кредитов» по датам графика. Сортировка по дате оплаты, строки без даты в конце.</div>
   </section>
 
-  <!-- ДОЛГИ -->
   <section class="sec" id="s-debt">
     <div class="secHead"><span class="icon i-debt">!</span><h2>Долги</h2></div>
     <div class="tiles" id="debtTiles"></div>
@@ -219,7 +216,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     </div>
   </section>
 
-  <!-- КРЕДИТЫ -->
   <section class="sec" id="s-cred">
     <div class="secHead"><span class="icon i-cred">₽</span><h2>Кредиты и рассрочки</h2></div>
     <div class="tiles" id="credTiles"></div>
@@ -227,7 +223,6 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
     <button class="add" data-act="addCred"><span class="plus">＋</span>Новый кредит / заём</button>
   </section>
 
-  <!-- ГРАФИКИ -->
   <section class="sec" id="s-ch">
     <div class="secHead"><span class="icon i-ch">▤</span><h2>Графики и статистика</h2>
       <select id="chYear" class="chip mSel" style="margin-left:auto;max-width:150px"></select>
@@ -241,7 +236,7 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
       <div class="blockHead"><span class="dot o"></span>Динамика расходов по месяцам<span class="right" id="chExpSum"></span></div>
       <div class="chartBox" id="chExp"></div>
       <div class="stat" id="chExpStat"></div>
-      <div class="note">В расходы входят обязательные платежи месяца, взносы по кредитам из графиков и плановые расходы. Будущие месяцы показаны бледнее — это план.</div>
+      <div class="note">В расходы входят обязательные платежи месяца, взносы по кредитам из графиков и плановые расходы. Будущие месяцы бледнее — это план.</div>
     </div>
     <div class="glass block">
       <div class="blockHead"><span class="dot" style="background:var(--purple)"></span>Доходы и расходы вместе<span class="right" id="chMixSum"></span></div>
@@ -260,14 +255,13 @@ svg.chart{width:100%;min-width:620px;height:auto;display:block}
 </div></nav>
 
 <script>
-/* ================== НАСТРОЙКИ СИНХРОНИЗАЦИИ ==================
-   1) API_URL — адрес деплоя Google Apps Script (…/exec)
-   2) SECRET  — тот же секрет, что в скрипте
-   Пока API_URL пустой, приложение работает офлайн (только на этом устройстве).
-============================================================== */
+/* ============ НАСТРОЙКИ СИНХРОНИЗАЦИИ ============
+   API_URL — адрес развёртывания Apps Script, оканчивается на /exec
+   SECRET  — тот же секрет, что в Код.gs
+=================================================== */
 const API_URL='https://script.google.com/macros/s/AKfycbyhbZdzEjqB2L1-dATOu8vU_uBI6TMiIR2qD-JTBiS1zZfzynFAEVIlFNIOQmIOLWvXoA/exec';
 const SECRET='rkh-2026-x7Kq9m-budget';
-const SYNC_EVERY=10000;
+const PULL_EVERY=10000;
 
 const KEY='mtBudget_v5';
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -291,9 +285,8 @@ const MNS=['янв','фев','мар','апр','май','июн','июл','ав�
 const mName=m=>{const [y,mm]=m.split('-');return MN[+mm-1]+' '+y};
 const Y_MIN=2026,Y_MAX=2030;
 
-/* ---------- Telegram ---------- */
 const tg=window.Telegram&&window.Telegram.WebApp?window.Telegram.WebApp:null;
-let ME='local',MENAME='устройство';
+let ME='local',MENAME='браузер';
 if(tg){
   try{tg.ready();tg.expand();if(tg.disableVerticalSwipes)tg.disableVerticalSwipes()}catch(e){}
   document.body.classList.add('tma');
@@ -333,42 +326,53 @@ let S=migrate(embedded&&(!stored||(embedded.savedAt||0)>=(stored.savedAt||0))?em
 let chYear=+S.month.slice(0,4);
 
 let tId;
-function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(tId);tId=setTimeout(()=>el.classList.remove('on'),1600)}
-function save(q){S.savedAt=Date.now();S.lastByName=MENAME;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushSoon();if(!q)toast('Сохранено')}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(tId);tId=setTimeout(()=>el.classList.remove('on'),1800)}
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(q){S.savedAt=Date.now();S.lastByName=MENAME;saveLocal();markDirty();if(!q)toast('Сохранено')}
 
-/* ---------- синхронизация ---------- */
-let pushTimer=null,busy=false,lastSync=0;
-function syncTag(text,cls){const el=document.getElementById('syncTag');el.textContent=text;el.className='chip state'+(cls?' '+cls:'')}
-function pushSoon(){if(!API_URL)return;clearTimeout(pushTimer);pushTimer=setTimeout(push,1200)}
-async function push(){
-  if(!API_URL||busy)return;busy=true;syncTag('☁️ сохраняю…');
+/* ================= СИНХРОНИЗАЦИЯ (с очередью и повтором) ================= */
+let dirty=false,sending=false,pulling=false,pushTimer=null,serverSavedAt=0;
+function syncTag(text,cls){const el=document.getElementById('syncTag');if(el){el.textContent=text;el.className='chip state'+(cls?' '+cls:'')}}
+function markDirty(){if(!API_URL)return;dirty=true;syncTag('☁️ жду сохранения…','wait');clearTimeout(pushTimer);pushTimer=setTimeout(flush,1200)}
+async function flush(){
+  if(!API_URL||sending||!dirty)return;
+  sending=true;dirty=false;syncTag('☁️ сохраняю…','wait');
+  const payload=JSON.stringify({secret:SECRET,userId:ME,userName:MENAME,initData:tg?tg.initData:'',state:S});
   try{
-    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({secret:SECRET,userId:ME,userName:MENAME,initData:tg?tg.initData:'',state:S})});
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:payload});
     const d=await r.json();
-    if(d.error){syncTag('⚠️ нет доступа','err');return}
-    if(d.conflict&&d.state){applyRemote(d.state);toast('Взята версия от '+(d.state.lastByName||'второго участника'))}
-    lastSync=Date.now();syncTag('☁️ синхронизировано','ok');
-  }catch(e){syncTag('📴 офлайн','err')}finally{busy=false}
+    if(d.error){syncTag('⚠️ '+d.error,'err');return}
+    if(d.conflict&&d.state){applyRemote(d.state);toast('Взята версия от '+(d.state.lastByName||'второго участника'));dirty=true}
+    else{serverSavedAt=d.savedAt||S.savedAt||0;syncTag('☁️ синхронизировано','ok')}
+  }catch(e){
+    dirty=true;syncTag('📴 офлайн, повторю','err');
+  }finally{
+    sending=false;
+    if(dirty){clearTimeout(pushTimer);pushTimer=setTimeout(flush,2500)}
+  }
 }
 async function pull(silent){
-  if(!API_URL||busy)return;busy=true;
+  if(!API_URL||sending||dirty||pulling)return;
+  pulling=true;
   try{
     const r=await fetch(API_URL+'?secret='+encodeURIComponent(SECRET)+'&t='+Date.now());
     const d=await r.json();
-    if(d.error){syncTag('⚠️ нет доступа','err');return}
-    if(d.savedAt&&d.savedAt>(S.savedAt||0)){applyRemote(d);if(!silent)toast('Загружены изменения от '+(d.lastByName||'второго участника'))}
-    lastSync=Date.now();syncTag('☁️ синхронизировано','ok');
-  }catch(e){syncTag('📴 офлайн','err')}finally{busy=false}
+    if(d.error){syncTag('⚠️ '+d.error,'err');return}
+    serverSavedAt=d.savedAt||0;
+    if(serverSavedAt>(S.savedAt||0)){applyRemote(d);if(!silent)toast('Загружены изменения от '+(d.lastByName||'второго участника'))}
+    else if((S.savedAt||0)>serverSavedAt){markDirty();return}
+    syncTag('☁️ синхронизировано','ok');
+  }catch(e){syncTag('📴 офлайн','err')}finally{pulling=false}
 }
 function applyRemote(d){
   const keepMonth=S.month,keepTheme=S.theme;
   S=migrate(d);S.month=keepMonth;S.theme=keepTheme;chYear=+S.month.slice(0,4);
-  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
-  renderAll();
+  saveLocal();renderAll();
 }
+window.addEventListener('online',()=>{if(dirty)flush();else pull(true)});
+setInterval(()=>{if(dirty&&!sending)flush()},5000);
 
-/* ---------- доступ ---------- */
+/* ================= доступ к данным ================= */
 const M=()=>S.month;
 const PM=m=>{m=m||M();if(!S.paymentsByMonth[m])S.paymentsByMonth[m]=[];return S.paymentsByMonth[m]};
 const PL=m=>{m=m||M();if(!S.plansByMonth[m])S.plansByMonth[m]=[];return S.plansByMonth[m]};
@@ -681,11 +685,13 @@ document.addEventListener('click',e=>{
     document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('on',s.id==='s-'+t.dataset.tab));
     window.scrollTo({top:0,behavior:'smooth'})}
 });
-document.getElementById('month').addEventListener('change',e=>{S.month=e.target.value;chYear=+S.month.slice(0,4);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}renderAll()});
+document.getElementById('month').addEventListener('change',e=>{S.month=e.target.value;chYear=+S.month.slice(0,4);saveLocal();renderAll()});
 document.getElementById('chYear').addEventListener('change',e=>{chYear=+e.target.value;renderCharts()});
-document.getElementById('themeBtn').addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(x){}});
-document.getElementById('syncBtn').addEventListener('click',()=>{if(!API_URL){toast('Синхронизация не настроена: впишите API_URL');return}pull()});
-
+document.getElementById('themeBtn').addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=S.theme;saveLocal()});
+document.getElementById('syncBtn').addEventListener('click',()=>{
+  if(!API_URL){toast('Синхронизация не настроена');return}
+  if(dirty){flush();toast('Отправляю ваши изменения…')}else pull()
+});
 document.getElementById('saveBtn').addEventListener('click',()=>{
   const clone=document.documentElement.cloneNode(true);
   ['incList','payList','planList','debtList','credList','ovTiles','ovYearTiles','incTiles','payTiles','debtTiles','credTiles','incStat','payStat','planStat','debtStat','month','chYear','chInc','chExp','chMix','chIncStat','chExpStat'].forEach(id=>{
@@ -702,8 +708,8 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
 function clock(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+' · '+d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}
 document.documentElement.dataset.theme=S.theme||'light';
 clock();setInterval(clock,20000);renderAll();
-if(API_URL){syncTag('☁️ подключаюсь…');pull(true);setInterval(()=>pull(true),SYNC_EVERY);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull(true)});
+if(API_URL){syncTag('☁️ подключаюсь…','wait');pull(true);setInterval(()=>pull(true),PULL_EVERY);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(dirty)flush();else pull(true)}});
 }else{syncTag('📴 локальный режим')}
 </script>
 </body>
